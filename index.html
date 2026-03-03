@@ -1,1 +1,268 @@
-1111
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrbicXs</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0088cc">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Roboto',sans-serif}
+    body{background:#f0f2f5;display:flex;justify-content:center;min-height:100vh}
+    .app{width:100%;max-width:400px;background:white;height:100vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 20px rgba(0,0,0,.1)}
+    .header{background:#0088cc;color:white;padding:16px;font-weight:500;font-size:18px;text-align:center}
+    .content{padding:24px;text-align:center}
+    .content input,.content button{width:100%;padding:14px;margin:12px 0;border-radius:12px;font-size:16px}
+    .content input{border:1px solid #ddd}
+    .content button{background:#0088cc;color:white;border:none;cursor:pointer}
+    .profile-setup{text-align:center;padding:30px 20px}
+    .avatar-preview{width:120px;height:120px;border-radius:50%;margin:20px auto;object-fit:cover;border:4px solid #0088cc}
+    .search input{width:100%;padding:12px;border-radius:25px;border:none;background:#f0f2f5;font-size:16px;margin:12px}
+    .user-item{padding:12px 16px;display:flex;align-items:center;cursor:pointer;border-bottom:1px solid #eee}
+    .user-item:hover{background:#f8f9fa}
+    .user-item img{width:50px;height:50px;border-radius:50%;margin-right:12px;object-fit:cover}
+    .chat-header{background:#0088cc;color:white;padding:14px;display:flex;align-items:center;position:fixed;top:0;width:100%;max-width:400px;z-index:10}
+    .chat-header .back{cursor:pointer;font-size:28px;margin-right:12px}
+    .chat-header img{width:40px;height:40px;border-radius:50%;margin-right:12px;object-fit:cover}
+    .messages{flex:1;overflow-y:auto;padding:16px;padding-top:80px;padding-bottom:90px;background:#efeae2}
+    .msg{max-width:75%;padding:10px 14px;border-radius:18px;margin:8px 0;word-wrap:break-word}
+    .sent{background:#00bfff;color:white;margin-left:auto;border-bottom-right-radius:4px}
+    .received{background:white;color:black;margin-right:auto;border-bottom-left-radius:4px}
+    .msg img{max-width:100%;border-radius:12px;margin:6px 0;cursor:pointer}
+    .msg-time{font-size:11px;color:#999;text-align:right;margin-top:4px}
+    .input-bar{position:fixed;bottom:0;width:100%;max-width:400px;background:white;padding:10px;display:flex;border-top:1px solid #eee}
+    .attach{width:44px;height:44px;background:#f0f2f5;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-right:8px;font-size:20px}
+    .input-bar input[type=text]{flex:1;padding:12px 16px;border:none;background:#f0f2f5;border-radius:25px}
+    .input-bar button{width:44px;height:44px;background:#0088cc;color:white;border:none;border-radius:50%;cursor:pointer}
+    .hidden{display:none !important}
+    .status{margin-top:10px;color:#00aa00}
+    .error{color:#ff4444}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div id="authStep">
+      <div class="header">OrbicXs</div>
+      <div class="content">
+        <input id="email" type="email" placeholder="email@gmail.com">
+        <button onclick="sendMagicLink()">KIRISH</button>
+        <p id="status" class="status"></p>
+      </div>
+    </div>
+
+    <div id="profileSetupStep" class="hidden">
+      <div class="header">Profilni to‘ldiring</div>
+      <div class="profile-setup">
+        <img id="avatarPreview" class="avatar-preview" src="https://via.placeholder.com/120/cccccc/666666?text=+">
+        <input type="file" id="avatarInput" accept="image/*" onchange="previewAvatar(event)" style="display:none">
+        <button onclick="document.getElementById('avatarInput').click()" style="padding:10px 20px;background:#0088cc;color:white;border:none;border-radius:12px;cursor:pointer">Rasm tanlash</button>
+        <p class="suggested">Taklif etilgan username:</p>
+        <h3 id="suggestedUsername" style="color:#0088cc"></h3>
+        <input id="usernameInput" type="text" placeholder="Username kiriting (@ bilan)" style="text-align:center;width:80%;padding:12px;border-radius:12px;border:1px solid #ddd">
+        <button onclick="saveProfile()" style="margin-top:20px">SAQLASH VA DAVOM ETISH</button>
+      </div>
+    </div>
+
+    <div id="usersStep" class="hidden">
+      <div class="header">Xabarlar</div>
+      <div class="search"><input type="text" placeholder="Qidiruv..." oninput="searchUsers(this.value)"></div>
+      <div class="user-list" id="userList"></div>
+    </div>
+
+    <div id="chatStep" class="hidden" style="display:flex;flex-direction:column;height:100vh">
+      <div class="chat-header">
+        <div class="back" onclick="backToUsers()">✖️</div>
+        <img id="chatAvatar" src="">
+        <div class="info">
+          <div class="name" id="chatWithName"></div>
+          <div class="status">online</div>
+        </div>
+      </div>
+      <div class="messages" id="messages"></div>
+      <div class="input-bar">
+        <div class="attach" onclick="document.getElementById('fileInput').click()">📷</div>
+        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="uploadImage(event)">
+        <input type="text" id="msgInput" placeholder="Xabar..." onkeypress="if(event.key==='Enter') sendMsg()">
+        <button onclick="sendMsg()">❤️</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://mgfqoogijpadwitwwqfl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1nZnFvb2dpanBhZHdpdHd3cWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1NDk5MTksImV4cCI6MjA4ODEyNTkxOX0.KUQcEKVvtOs8Qq-KA253-H38ZLXaL7rFLU1Llw968rk';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let user = null, myUsername = '', currentChatWith = null;
+
+    // 
+    async function subscribeToPush() {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+      const reg = await navigator.serviceWorker.register('/sw.js');
+      const vapidKey = await fetch('/vapid_public_key.txt').then(r => r.text().trim());
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: vapidKey
+      });
+      await supabase.from('push_subscriptions').upsert({ user_id: user.id, subscription: sub }, { onConflict: 'user_id' });
+    }
+
+    window.sendMagicLink = async () => {
+      const email = document.getElementById('email').value.trim();
+      if (!email) return status("Email kiriting!", "error");
+      const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
+      if (error) return status(error.message, "error");
+      status("Havola yuborildi! Emailni tekshiring");
+    };
+
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      user = session.user;
+      const { data: profile } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
+      if (profile?.username) {
+        myUsername = profile.username;
+        showUsersList();
+      } else {
+        document.getElementById('authStep').classList.add('hidden');
+        document.getElementById('profileSetupStep').classList.remove('hidden');
+        const suggested = '@' + user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+        document.getElementById('suggestedUsername').textContent = suggested;
+        document.getElementById('usernameInput').value = suggested;
+      }
+    })();
+
+    window.previewAvatar = e => { if (e.target.files[0]) document.getElementById('avatarPreview').src = URL.createObjectURL(e.target.files[0]) };
+
+    window.saveProfile = async () => {
+      let username = document.getElementById('usernameInput').value.trim();
+      if (!username) return alert("Username kiriting!");
+      if (!username.startsWith('@')) username = '@' + username;
+      username = username.toLowerCase();
+
+      let avatarUrl = `https://via.placeholder.com/120/cccccc/666666?text=${username[1].toUpperCase()}`;
+      if (document.getElementById('avatarInput').files[0]) {
+        const file = document.getElementById('avatarInput').files[0];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}.${fileExt}`;
+        const { error } = await supabase.storage.from('avatars').upload(fileName, file, { upsert: true });
+        if (!error || error.status === 409) {
+          const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
+          avatarUrl = data.publicUrl;
+        }
+      }
+
+      const { error } = await supabase.from('profiles').upsert({ id: user.id, username, avatar_url: avatarUrl });
+      if (error?.code === '23505') return alert("Bu username band!");
+      if (error) return alert("Xatolik: " + error.message);
+      myUsername = username;
+      showUsersList();
+    };
+
+    async function showUsersList() {
+      document.getElementById('profileSetupStep').classList.add('hidden');
+      document.getElementById('authStep').classList.add('hidden');
+      document.getElementById('usersStep').classList.remove('hidden');
+
+      // Bildirishnoma ruxsat so‘rash
+      if (Notification.permission === 'default') {
+        Notification.requestPermission().then(p => { if (p === 'granted') subscribeToPush(); });
+      } else if (Notification.permission === 'granted') {
+        subscribeToPush();
+      }
+
+      const { data } = await supabase.from('profiles').select('username, avatar_url');
+      const list = document.getElementById('userList'); list.innerHTML = '';
+      data.forEach(u => {
+        if (u.username === myUsername) return;
+        const letter = (u.username || '@?')[1].toUpperCase();
+        const placeholder = `https://via.placeholder.com/50/ccc/666?text=${letter}`;
+        const div = document.createElement('div'); div.className = 'user-item';
+        div.innerHTML = `<img src="${u.avatar_url || placeholder}" onerror="this.onerror=null;this.src='${placeholder}'" loading="lazy">
+                         <div class="info"><div class="name">${u.username}</div></div>`;
+        div.onclick = () => openChat(u.username, u.avatar_url || placeholder);
+        list.appendChild(div);
+      });
+    }
+
+    function openChat(username, avatarUrl) {
+      currentChatWith = username;
+      document.getElementById('usersStep').classList.add('hidden');
+      document.getElementById('chatStep').classList.remove('hidden');
+      document.getElementById('chatWithName').textContent = username;
+      document.getElementById('chatAvatar').src = avatarUrl;
+      document.getElementById('messages').innerHTML = '';
+      loadMessages();
+    }
+
+    window.backToUsers = () => {
+      document.getElementById('chatStep').classList.add('hidden');
+      document.getElementById('usersStep').classList.remove('hidden');
+      currentChatWith = null;
+    };
+
+    window.sendMsg = async () => {
+      const input = document.getElementById('msgInput');
+      const text = input.value.trim();
+      if (!text || !currentChatWith) return;
+      const chatId = [myUsername, currentChatWith].sort().join('_');
+      await supabase.from('messages').insert({ chat_id: chatId, sender: myUsername, text });
+      input.value = '';
+    };
+
+    window.uploadImage = async e => {
+      const file = e.target.files[0];
+      if (!file || file.size > 10*1024*1024) return alert("Rasm 10MB dan kichik bo‘lsin!");
+      const chatId = [myUsername, currentChatWith].sort().join('_');
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `chat/${chatId}/${fileName}`;
+      await supabase.storage.from('chat-images').upload(filePath, file);
+      const { data } = supabase.storage.from('chat-images').getPublicUrl(filePath);
+      await supabase.from('messages').insert({ chat_id: chatId, sender: myUsername, image_url: data.publicUrl });
+      e.target.value = '';
+    };
+
+    function loadMessages() {
+      if (!currentChatWith) return;
+      const chatId = [myUsername, currentChatWith].sort().join('_');
+      supabase.channel(`chat:${chatId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `chat_id=eq.${chatId}` }, p => {
+          const m = p.new;
+          if (m.sender === myUsername) return addMessage(m);
+          addMessage(m);
+          if (document.hidden && Notification.permission === 'granted') {
+            new Notification(m.sender, {
+              body: m.text || "Yangi rasm",
+              icon: 'https://via.placeholder.com/192/0088cc/ffffff?text=OX',
+              tag: 'orbicxs'
+            });
+          }
+        })
+        .subscribe();
+
+      supabase.from('messages').select('*').eq('chat_id', chatId).order('created_at', { ascending: true })
+        .then(({ data }) => data.forEach(addMessage));
+    }
+
+    function addMessage(m) {
+      const isSent = m.sender === myUsername;
+      const div = document.createElement('div');
+      div.className = `msg ${isSent ? 'sent' : 'received'}`;
+      if (m.image_url) {
+        div.innerHTML = `<img src="${m.image_url}" onclick="window.open(this.src)" style="border-radius:12px"><div class="msg-time">${new Date(m.created_at).toLocaleTimeString('uz',{hour:'2-digit',minute:'2-digit'})}</div>`;
+      } else {
+        div.innerHTML = `${m.text}<div class="msg-time">${new Date(m.created_at).toLocaleTimeString('uz',{hour:'2-digit',minute:'2-digit'})}</div>`;
+      }
+      document.getElementById('messages').appendChild(div);
+      div.scrollIntoView({behavior:'smooth'});
+    }
+
+    function status(t, c="status") { document.getElementById('status').textContent = t; document.getElementById('status').className = c; }
+    window.onpopstate = () => currentChatWith && backToUsers();
+  </script>
+</body>
+</html>
+
