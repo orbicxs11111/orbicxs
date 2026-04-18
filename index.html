@@ -1,181 +1,125 @@
-<!DOCTYPE html>
-<html lang="uz">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OrbicXs Browser</title>
-    <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #0a0a0a;
-            height: 100vh;
-            overflow: hidden;
-            color: #fff;
-        }
-        .browser {
-            width: 100%; height: 100vh;
-            background: #1e1e1e;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 0 40px rgba(0,0,0,0.9);
-        }
-        .title-bar {
-            background: linear-gradient(90deg, #0a84ff, #0055cc);
-            padding: 10px 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-weight: 600;
-            font-size: 18px;
-        }
-        .logo { font-size: 28px; font-weight: bold; }
+import sys
+from PyQt5.QtCore import QUrl
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import (
+    QApplication, QMainWindow, QLineEdit, QToolBar,
+    QStatusBar, QTabWidget, QAction
+)
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 
-        .toolbar {
-            background: #252525;
-            padding: 10px 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .nav-btn {
-            width: 42px; height: 42px;
-            background: #3a3a3a;
-            border: none;
-            color: #fff;
-            font-size: 24px;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-        .url-bar, .search-bar {
-            padding: 12px 18px;
-            background: #1f1f1f;
-            border: 1px solid #555;
-            border-radius: 30px;
-            color: #fff;
-            font-size: 16px;
-        }
-        .url-bar { flex: 2; min-width: 320px; }
-        .search-bar { flex: 1; min-width: 250px; }
-        .btn {
-            padding: 12px 24px;
-            background: #0a84ff;
-            color: white;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .iframe-container {
-            flex: 1;
-            background: #fff;
-        }
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-    </style>
-</head>
-<body>
 
-<div class="browser">
-    <div class="title-bar">
-        <div class="logo">OrbicXs</div>
-        <div>OrbicXs Browser</div>
-        <div>● ● ●</div>
-    </div>
+class Browser(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Orbicxs Browser")
+        self.setGeometry(100, 100, 1280, 850)
 
-    <div class="toolbar">
-        <button class="nav-btn" onclick="goBack()">←</button>
-        <button class="nav-btn" onclick="goForward()">→</button>
-        <button class="nav-btn" onclick="reloadPage()">↻</button>
+        # Tablar
+        self.tabs = QTabWidget()
+        self.tabs.setDocumentMode(True)
+        self.tabs.setTabsClosable(True)
+        self.tabs.tabCloseRequested.connect(self.close_tab)
+        self.setCentralWidget(self.tabs)
 
-        <input type="text" id="urlInput" class="url-bar" 
-               value="https://www.google.com" 
-               placeholder="URL kiriting..." 
-               onkeypress="if(event.key==='Enter') loadUrl()">
+        # Brauzer ochilganda orbicxs.com ochiladi
+        self.add_new_tab(QUrl("https://orbicxs.com"), "Orbicxs")
 
-        <button class="btn" onclick="loadUrl()">Go</button>
+        self.create_toolbar()
+        self.statusBar = QStatusBar()
+        self.setStatusBar(self.statusBar)
 
-        <!-- Qidirish maydoni - Google kabi -->
-        <input type="text" id="searchInput" class="search-bar" 
-               placeholder="Toshkent kitob, ob-havo yoki istalgan narsani yozing..." 
-               onkeypress="if(event.key==='Enter') searchGoogle()">
-        <button class="btn" onclick="searchGoogle()">Google'da qidirish</button>
-    </div>
+    def create_toolbar(self):
+        toolbar = QToolBar()
+        self.addToolBar(toolbar)
 
-    <div class="iframe-container">
-        <iframe id="webview" src="https://www.google.com"></iframe>
-    </div>
-</div>
+        # Back
+        back_btn = QAction("← Back", self)
+        back_btn.setShortcut(QKeySequence("Back"))
+        back_btn.triggered.connect(lambda: self.current_browser().back())
+        toolbar.addAction(back_btn)
 
-<script>
-    const iframe = document.getElementById('webview');
-    const urlInput = document.getElementById('urlInput');
-    const searchInput = document.getElementById('searchInput');
+        # Forward
+        forward_btn = QAction("→ Forward", self)
+        forward_btn.setShortcut(QKeySequence("Forward"))
+        forward_btn.triggered.connect(lambda: self.current_browser().forward())
+        toolbar.addAction(forward_btn)
 
-    // Bir nechta proxy (hozirgi paytda eng yaxshilari)
-    const proxies = [
-        '', 
-        'https://api.allorigins.win/raw?url=',
-        'https://corsproxy.io/?url='
-    ];
-    let proxyIndex = 0;
+        # Reload
+        reload_btn = QAction("↻ Reload", self)
+        reload_btn.setShortcut(QKeySequence("Refresh"))
+        reload_btn.triggered.connect(lambda: self.current_browser().reload())
+        toolbar.addAction(reload_btn)
 
-    function tryLoad(url) {
-        if (proxyIndex >= proxies.length) {
-            iframe.src = url;
-            return;
-        }
-        const proxy = proxies[proxyIndex];
-        iframe.src = proxy ? proxy + encodeURIComponent(url) : url;
-        proxyIndex++;
-    }
+        # Home (orbicxs.com)
+        home_btn = QAction("🏠 Home", self)
+        home_btn.triggered.connect(self.navigate_home)
+        toolbar.addAction(home_btn)
 
-    function loadUrl() {
-        let url = urlInput.value.trim();
-        if (!url) return;
-        if (!url.startsWith('http')) url = 'https://' + url;
-        proxyIndex = 0;
-        tryLoad(url);
-    }
+        # URL bar
+        self.url_bar = QLineEdit()
+        self.url_bar.setMinimumWidth(550)
+        self.url_bar.returnPressed.connect(self.navigate_to_url)
+        toolbar.addWidget(self.url_bar)
 
-    // Asosiy funksiya: Google orqali qidirish
-    function searchGoogle() {
-        let query = searchInput.value.trim();
-        if (!query) return;
+        # New Tab
+        new_tab_btn = QAction("+ New Tab", self)
+        new_tab_btn.triggered.connect(lambda: self.add_new_tab(QUrl("https://orbicxs.com"), "New Tab"))
+        toolbar.addAction(new_tab_btn)
 
-        const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    def add_new_tab(self, qurl=QUrl("https://orbicxs.com"), label="New Tab"):
+        browser = QWebEngineView()
+        browser.setUrl(qurl)
         
-        urlInput.value = googleSearchUrl;
-        proxyIndex = 0;
-        tryLoad(googleSearchUrl);
-    }
+        browser.urlChanged.connect(lambda qurl, b=browser: self.update_url_bar(qurl, b))
+        
+        browser.loadFinished.connect(lambda: self.tabs.setTabText(
+            self.tabs.currentIndex(), 
+            browser.page().title()[:35] or label
+        ))
 
-    function reloadPage() { 
-        iframe.contentWindow.location.reload(); 
-    }
-    function goBack() { 
-        try { iframe.contentWindow.history.back(); } catch(e) { alert("Orqaga qaytish bloklangan"); }
-    }
-    function goForward() { 
-        try { iframe.contentWindow.history.forward(); } catch(e) {} 
-    }
+        index = self.tabs.addTab(browser, label)
+        self.tabs.setCurrentIndex(index)
 
-    // URL ni yangilab turish
-    iframe.onload = function() {
-        try {
-            const current = iframe.contentWindow.location.href;
-            if (!current.includes('allorigins') && !current.includes('corsproxy')) {
-                urlInput.value = current;
-            }
-        } catch(e) {}
-    };
+    def current_browser(self):
+        return self.tabs.currentWidget()
 
-    console.log("%cOrbicXs Browser yuklandi. Qidirish Google orqali ishlaydi!", "color:#0a84ff; font-size:16px;");
-</script>
+    def navigate_to_url(self):
+        text = self.url_bar.text().strip()
+        if not text:
+            return
 
-</body>
-</html>
+        # 1. To'liq URL bo'lsa (http/https bilan)
+        if text.startswith(("http://", "https://")):
+            self.current_browser().setUrl(QUrl(text))
+            return
+
+        # 2. Domen ko'rinishidagi link (google.com, youtube.com)
+        if "." in text and " " not in text:
+            if not text.startswith("www."):
+                text = "www." + text
+            self.current_browser().setUrl(QUrl("https://" + text))
+            return
+
+        # 3. Oddiy matn bo'lsa → Google'da qidiruv
+        # Bu yerda Google'da qidirilganda istalgan narsani topa olasiz
+        search_url = f"https://www.google.com/search?q={text.replace(' ', '+')}&hl=uz"
+        self.current_browser().setUrl(QUrl(search_url))
+
+    def navigate_home(self):
+        self.current_browser().setUrl(QUrl("https://orbicxs.com"))
+
+    def update_url_bar(self, qurl, browser=None):
+        if browser == self.current_browser():
+            self.url_bar.setText(qurl.toString())
+
+    def close_tab(self, index):
+        if self.tabs.count() > 1:
+            self.tabs.removeTab(index)
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    app.setAttribute(0xAA, True)  # High DPI
+    window = Browser()
+    window.show()
+    sys.exit(app.exec_())
