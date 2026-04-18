@@ -8,10 +8,10 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
-            background: #0f0f0f;
-            color: #fff;
+            background: #0a0a0a;
             height: 100vh;
             overflow: hidden;
+            color: #fff;
         }
         .browser {
             width: 100%;
@@ -19,45 +19,49 @@
             background: #1e1e1e;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 40px rgba(0,0,0,0.9);
         }
         .title-bar {
-            background: linear-gradient(to right, #0a84ff, #0055cc);
-            padding: 10px 15px;
+            background: linear-gradient(to right, #0a84ff, #0066cc);
+            padding: 8px 15px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            font-size: 18px;
             font-weight: bold;
         }
-        .logo { font-size: 24px; color: #fff; }
+        .logo { font-size: 26px; color: #fff; letter-spacing: 1px; }
+        
         .toolbar {
-            background: #2d2d2d;
-            padding: 12px;
+            background: #2a2a2a;
+            padding: 10px 12px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
         .nav-btn {
-            width: 38px;
-            height: 38px;
-            background: #444;
+            width: 40px;
+            height: 40px;
+            background: #3d3d3d;
             border: none;
-            color: white;
-            font-size: 20px;
+            color: #fff;
+            font-size: 22px;
             border-radius: 50%;
             cursor: pointer;
         }
-        .url-bar {
-            flex: 1;
-            padding: 12px 18px;
+        .url-bar, .search-bar {
+            padding: 12px 16px;
             background: #1f1f1f;
             border: 1px solid #555;
             border-radius: 30px;
             color: #fff;
             font-size: 16px;
         }
-        .go-btn {
-            padding: 12px 24px;
+        .url-bar { flex: 2; min-width: 300px; }
+        .search-bar { flex: 1; min-width: 200px; }
+        .go-btn, .search-btn {
+            padding: 12px 22px;
             background: #0a84ff;
             color: white;
             border: none;
@@ -84,7 +88,7 @@
     <div class="title-bar">
         <div class="logo">OrbicXs</div>
         <div>OrbicXs Browser</div>
-        <div>● ● ●</div>
+        <div style="font-size:14px;">● ● ●</div>
     </div>
 
     <!-- Toolbar -->
@@ -95,34 +99,55 @@
 
         <input type="text" id="urlInput" class="url-bar" 
                value="https://www.google.com" 
-               placeholder="Qidirish yoki URL kiriting..."
-               onkeypress="if(event.key === 'Enter') loadUrl()">
+               placeholder="URL kiriting..." 
+               onkeypress="if(event.key==='Enter') loadUrl()">
 
         <button class="go-btn" onclick="loadUrl()">Go</button>
+
+        <!-- Qidirish maydoni (Yandex Browser kabi) -->
+        <input type="text" id="searchInput" class="search-bar" 
+               placeholder="Internetda qidirish... (Google yoki Yandex)" 
+               onkeypress="if(event.key==='Enter') searchWeb()">
+
+        <button class="search-btn" onclick="searchWeb()">Qidirish</button>
     </div>
 
     <!-- Brauzer maydoni -->
     <div class="iframe-container">
-        <iframe id="webview" is="x-frame-bypass" src="https://www.google.com"></iframe>
+        <iframe id="webview" src="https://www.google.com"></iframe>
     </div>
 </div>
-
-<!-- X-Frame-Bypass kutubxonasi (muhim qism!) -->
-<script src="https://unpkg.com/@ungap/custom-elements-builtin"></script>
-<script type="module" src="https://unpkg.com/x-frame-bypass"></script>
 
 <script>
     const iframe = document.getElementById('webview');
     const urlInput = document.getElementById('urlInput');
+    const searchInput = document.getElementById('searchInput');
 
-    function loadUrl() {
+    // Saytni yuklash (proxy bilan sinash)
+    function loadUrl(useProxy = false) {
         let url = urlInput.value.trim();
         if (!url) return;
+        if (!url.startsWith('http')) url = 'https://' + url;
 
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            url = 'https://' + url;
+        if (useProxy) {
+            iframe.src = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+        } else {
+            iframe.src = url;
         }
-        iframe.src = url;
+    }
+
+    // Qidirish funksiyasi (Yandex Browser uslubida)
+    function searchWeb() {
+        let query = searchInput.value.trim();
+        if (!query) return;
+
+        // Google orqali qidirish (xohlasangiz Yandex qilish mumkin)
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        urlInput.value = searchUrl;
+        iframe.src = searchUrl;
+        
+        // Yandex qilishni xohlasangiz quyidagini yoqing:
+        // iframe.src = `https://yandex.com/search/?text=${encodeURIComponent(query)}`;
     }
 
     function reloadPage() {
@@ -130,18 +155,26 @@
     }
 
     function goBack() {
-        try { iframe.contentWindow.history.back(); } catch(e) { alert("Orqaga qaytish bloklangan"); }
+        try { iframe.contentWindow.history.back(); } catch(e) { alert("Orqaga qaytish imkonsiz"); }
     }
 
     function goForward() {
         try { iframe.contentWindow.history.forward(); } catch(e) {}
     }
 
-    // URL ni avto yangilash
+    // Sahifa yuklanganda URL ni yangilash
     iframe.onload = function() {
         try {
-            urlInput.value = iframe.contentWindow.location.href;
+            const currentUrl = iframe.contentWindow.location.href;
+            if (!currentUrl.includes('allorigins.win')) {
+                urlInput.value = currentUrl;
+            }
         } catch(e) {}
+    };
+
+    // Birinchi yuklash
+    window.onload = () => {
+        console.log("%cOrbicXs Browser yuklandi! Yandex uslubida ishlamoqda.", "color:#0a84ff; font-size:16px;");
     };
 </script>
 
