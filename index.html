@@ -3,165 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OrbicXs - Tez va xavfsiz brauzer</title>
+    <title>OrbicXs Browser</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #1e1e1e;
-            color: #fff;
-            height: 100vh;
-            overflow: hidden;
-        }
-        .browser-window {
-            width: 100%;
-            height: 100vh;
-            background: #2d2d2d;
-            border-radius: 12px;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .title-bar {
-            background: linear-gradient(to right, #0a84ff, #0066cc);
-            padding: 8px 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .title {
-            font-size: 18px;
-            font-weight: bold;
-        }
-        .controls {
-            display: flex;
-            gap: 8px;
-        }
-        .control-btn {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #ff5f57;
-        }
-        .control-btn:nth-child(2) { background: #ffbd2e; }
-        .control-btn:nth-child(3) { background: #28c940; }
-
-        .toolbar {
-            background: #3c3c3c;
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .nav-btn {
-            background: #555;
-            color: white;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            font-size: 18px;
-            cursor: pointer;
-        }
-        .url-bar {
-            flex: 1;
-            background: #1e1e1e;
-            border: 1px solid #555;
-            border-radius: 20px;
-            padding: 8px 16px;
-            color: #fff;
-            font-size: 15px;
-        }
-        .iframe-container {
-            flex: 1;
-            background: #fff;
-            position: relative;
-        }
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        .logo {
-            font-size: 22px;
-            font-weight: bold;
-            color: #0a84ff;
-        }
+        /* Oldingi stillar bir xil qoldi... (joy tejash uchun qisqartirdim) */
+        body { font-family: Arial, sans-serif; background: #111; margin:0; height:100vh; overflow:hidden; color:#fff; }
+        .browser-window { width:100%; height:100vh; background:#1e1e1e; display:flex; flex-direction:column; box-shadow:0 0 20px rgba(0,0,0,0.9); }
+        .title-bar { background:#0a84ff; padding:8px 12px; display:flex; align-items:center; justify-content:space-between; }
+        .toolbar { background:#333; padding:10px; display:flex; gap:10px; align-items:center; }
+        .url-bar { flex:1; padding:10px; border-radius:30px; border:none; background:#222; color:white; }
+        iframe { flex:1; border:none; background:white; }
     </style>
 </head>
 <body>
 
 <div class="browser-window">
-    <!-- Title bar -->
     <div class="title-bar">
-        <div class="logo">OrbicXs</div>
-        <div class="title">OrbicXs Browser</div>
-        <div class="controls">
-            <div class="control-btn"></div>
-            <div class="control-btn"></div>
-            <div class="control-btn"></div>
-        </div>
+        <strong>OrbicXs</strong>
+        <span>OrbicXs Browser</span>
+        <div>● ● ●</div>
     </div>
-
-    <!-- Toolbar -->
     <div class="toolbar">
-        <button class="nav-btn" onclick="goBack()">←</button>
-        <button class="nav-btn" onclick="goForward()">→</button>
-        <button class="nav-btn" onclick="reloadPage()">↻</button>
-        
-        <input type="text" id="urlInput" class="url-bar" 
-               value="https://www.google.com" 
-               onkeypress="if(event.key === 'Enter') loadUrl()">
-        
-        <button onclick="loadUrl()" style="background:#0a84ff; color:white; border:none; padding:8px 20px; border-radius:20px; cursor:pointer;">
-            Go
-        </button>
+        <button onclick="historyBack()">←</button>
+        <button onclick="historyForward()">→</button>
+        <button onclick="reload()">↻</button>
+        <input type="text" id="url" class="url-bar" value="https://www.example.com" onkeypress="if(event.key==='Enter') go()">
+        <button onclick="go()">Go</button>
     </div>
-
-    <!-- Brauzer maydoni (iframe) -->
-    <div class="iframe-container">
-        <iframe id="webview" src="https://www.google.com" allowfullscreen></iframe>
-    </div>
+    <iframe id="frame" src="https://www.example.com"></iframe>
 </div>
 
 <script>
-    const iframe = document.getElementById('webview');
-    const urlInput = document.getElementById('urlInput');
+    const frame = document.getElementById('frame');
+    const urlInput = document.getElementById('url');
 
-    function loadUrl() {
+    function go() {
         let url = urlInput.value.trim();
         if (!url) return;
-        
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            url = 'https://' + url;
-        }
-        iframe.src = url;
+        if (!url.startsWith('http')) url = 'https://' + url;
+        frame.src = url;
     }
 
-    function reloadPage() {
-        iframe.contentWindow.location.reload();
-    }
+    function reload() { frame.contentWindow.location.reload(); }
+    function historyBack() { try { frame.contentWindow.history.back(); } catch(e){ alert("Back is blocked by the site"); } }
+    function historyForward() { try { frame.contentWindow.history.forward(); } catch(e){} }
 
-    function goBack() {
-        if (iframe.contentWindow.history) iframe.contentWindow.history.back();
-    }
-
-    function goForward() {
-        if (iframe.contentWindow.history) iframe.contentWindow.history.forward();
-    }
-
-    // Sahifa yuklanganda urlni yangilab turish
-    iframe.onload = function() {
+    // URL ni avtomatik yangilab turish
+    frame.onload = () => {
         try {
-            urlInput.value = iframe.contentWindow.location.href;
+            urlInput.value = frame.contentWindow.location.href;
         } catch(e) {}
     };
 </script>
-
 </body>
 </html>
