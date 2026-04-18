@@ -5,63 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OrbicXs Browser</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             background: #0a0a0a;
             height: 100vh;
             overflow: hidden;
             color: #fff;
         }
         .browser {
-            width: 100%;
-            height: 100vh;
+            width: 100%; height: 100vh;
             background: #1e1e1e;
             display: flex;
             flex-direction: column;
             box-shadow: 0 0 40px rgba(0,0,0,0.9);
         }
         .title-bar {
-            background: linear-gradient(to right, #0a84ff, #0066cc);
-            padding: 8px 15px;
+            background: linear-gradient(90deg, #0a84ff, #0055cc);
+            padding: 10px 15px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            font-weight: 600;
             font-size: 18px;
-            font-weight: bold;
         }
-        .logo { font-size: 26px; color: #fff; letter-spacing: 1px; }
-        
+        .logo { font-size: 28px; font-weight: bold; }
+
         .toolbar {
-            background: #2a2a2a;
+            background: #252525;
             padding: 10px 12px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             flex-wrap: wrap;
         }
         .nav-btn {
-            width: 40px;
-            height: 40px;
-            background: #3d3d3d;
+            width: 42px; height: 42px;
+            background: #3a3a3a;
             border: none;
             color: #fff;
-            font-size: 22px;
+            font-size: 24px;
             border-radius: 50%;
             cursor: pointer;
         }
         .url-bar, .search-bar {
-            padding: 12px 16px;
+            padding: 12px 18px;
             background: #1f1f1f;
             border: 1px solid #555;
             border-radius: 30px;
             color: #fff;
             font-size: 16px;
         }
-        .url-bar { flex: 2; min-width: 300px; }
-        .search-bar { flex: 1; min-width: 200px; }
-        .go-btn, .search-btn {
-            padding: 12px 22px;
+        .url-bar { flex: 2; min-width: 320px; }
+        .search-bar { flex: 1; min-width: 250px; }
+        .btn {
+            padding: 12px 24px;
             background: #0a84ff;
             color: white;
             border: none;
@@ -72,7 +70,6 @@
         .iframe-container {
             flex: 1;
             background: #fff;
-            position: relative;
         }
         iframe {
             width: 100%;
@@ -84,14 +81,12 @@
 <body>
 
 <div class="browser">
-    <!-- Title Bar -->
     <div class="title-bar">
         <div class="logo">OrbicXs</div>
         <div>OrbicXs Browser</div>
-        <div style="font-size:14px;">● ● ●</div>
+        <div>● ● ●</div>
     </div>
 
-    <!-- Toolbar -->
     <div class="toolbar">
         <button class="nav-btn" onclick="goBack()">←</button>
         <button class="nav-btn" onclick="goForward()">→</button>
@@ -102,17 +97,15 @@
                placeholder="URL kiriting..." 
                onkeypress="if(event.key==='Enter') loadUrl()">
 
-        <button class="go-btn" onclick="loadUrl()">Go</button>
+        <button class="btn" onclick="loadUrl()">Go</button>
 
-        <!-- Qidirish maydoni (Yandex Browser kabi) -->
+        <!-- Qidirish maydoni - Google kabi -->
         <input type="text" id="searchInput" class="search-bar" 
-               placeholder="Internetda qidirish... (Google yoki Yandex)" 
-               onkeypress="if(event.key==='Enter') searchWeb()">
-
-        <button class="search-btn" onclick="searchWeb()">Qidirish</button>
+               placeholder="Toshkent kitob, ob-havo yoki istalgan narsani yozing..." 
+               onkeypress="if(event.key==='Enter') searchGoogle()">
+        <button class="btn" onclick="searchGoogle()">Google'da qidirish</button>
     </div>
 
-    <!-- Brauzer maydoni -->
     <div class="iframe-container">
         <iframe id="webview" src="https://www.google.com"></iframe>
     </div>
@@ -123,59 +116,65 @@
     const urlInput = document.getElementById('urlInput');
     const searchInput = document.getElementById('searchInput');
 
-    // Saytni yuklash (proxy bilan sinash)
-    function loadUrl(useProxy = false) {
+    // Bir nechta proxy (hozirgi paytda eng yaxshilari)
+    const proxies = [
+        '', 
+        'https://api.allorigins.win/raw?url=',
+        'https://corsproxy.io/?url='
+    ];
+    let proxyIndex = 0;
+
+    function tryLoad(url) {
+        if (proxyIndex >= proxies.length) {
+            iframe.src = url;
+            return;
+        }
+        const proxy = proxies[proxyIndex];
+        iframe.src = proxy ? proxy + encodeURIComponent(url) : url;
+        proxyIndex++;
+    }
+
+    function loadUrl() {
         let url = urlInput.value.trim();
         if (!url) return;
         if (!url.startsWith('http')) url = 'https://' + url;
-
-        if (useProxy) {
-            iframe.src = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-        } else {
-            iframe.src = url;
-        }
+        proxyIndex = 0;
+        tryLoad(url);
     }
 
-    // Qidirish funksiyasi (Yandex Browser uslubida)
-    function searchWeb() {
+    // Asosiy funksiya: Google orqali qidirish
+    function searchGoogle() {
         let query = searchInput.value.trim();
         if (!query) return;
 
-        // Google orqali qidirish (xohlasangiz Yandex qilish mumkin)
-        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-        urlInput.value = searchUrl;
-        iframe.src = searchUrl;
+        const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
         
-        // Yandex qilishni xohlasangiz quyidagini yoqing:
-        // iframe.src = `https://yandex.com/search/?text=${encodeURIComponent(query)}`;
+        urlInput.value = googleSearchUrl;
+        proxyIndex = 0;
+        tryLoad(googleSearchUrl);
     }
 
-    function reloadPage() {
-        iframe.contentWindow.location.reload();
+    function reloadPage() { 
+        iframe.contentWindow.location.reload(); 
+    }
+    function goBack() { 
+        try { iframe.contentWindow.history.back(); } catch(e) { alert("Orqaga qaytish bloklangan"); }
+    }
+    function goForward() { 
+        try { iframe.contentWindow.history.forward(); } catch(e) {} 
     }
 
-    function goBack() {
-        try { iframe.contentWindow.history.back(); } catch(e) { alert("Orqaga qaytish imkonsiz"); }
-    }
-
-    function goForward() {
-        try { iframe.contentWindow.history.forward(); } catch(e) {}
-    }
-
-    // Sahifa yuklanganda URL ni yangilash
+    // URL ni yangilab turish
     iframe.onload = function() {
         try {
-            const currentUrl = iframe.contentWindow.location.href;
-            if (!currentUrl.includes('allorigins.win')) {
-                urlInput.value = currentUrl;
+            const current = iframe.contentWindow.location.href;
+            if (!current.includes('allorigins') && !current.includes('corsproxy')) {
+                urlInput.value = current;
             }
         } catch(e) {}
     };
 
-    // Birinchi yuklash
-    window.onload = () => {
-        console.log("%cOrbicXs Browser yuklandi! Yandex uslubida ishlamoqda.", "color:#0a84ff; font-size:16px;");
-    };
+    console.log("%cOrbicXs Browser yuklandi. Qidirish Google orqali ishlaydi!", "color:#0a84ff; font-size:16px;");
 </script>
 
 </body>
