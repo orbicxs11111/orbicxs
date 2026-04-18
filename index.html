@@ -3,127 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orbicxs Browser</title>
+    <title>Orbicxs Home</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-        
+        * { box-sizing: border-box; }
         body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            background: linear-gradient(135deg, #0f0f23, #1a0b3d);
-            font-family: 'Inter', Arial, sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
-            overflow: hidden;
+            margin: 0; padding: 0; height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0033 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; color: white; overflow: hidden;
         }
-        .main {
-            text-align: center;
-            max-width: 720px;
-            width: 90%;
-        }
+        .container { text-align: center; width: 100%; max-width: 800px; padding: 20px; }
         .logo {
-            font-size: 5.2rem;
-            font-weight: 700;
-            background: linear-gradient(90deg, #00ccff, #aa00ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-            text-shadow: 0 0 40px rgba(0, 204, 255, 0.5);
+            font-size: 5rem; font-weight: 900; color: #00ccff;
+            margin-bottom: 5px; text-shadow: 0 0 30px rgba(0, 204, 255, 0.5);
+            letter-spacing: -2px;
         }
-        .tagline {
-            font-size: 1.35rem;
-            opacity: 0.85;
-            margin-bottom: 60px;
-        }
-        .search-container {
-            position: relative;
-            max-width: 620px;
-            margin: 0 auto;
-        }
+        .tagline { font-size: 1.2rem; margin-bottom: 40px; opacity: 0.7; letter-spacing: 1px; }
+        
+        .search-container { position: relative; width: 100%; max-width: 600px; margin: 0 auto; }
         .search-box {
-            width: 100%;
-            padding: 20px 28px;
-            font-size: 1.35rem;
-            border: 2px solid rgba(0, 204, 255, 0.3);
-            border-radius: 50px;
-            background: rgba(255, 255, 255, 0.08);
-            color: white;
-            outline: none;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            transition: all 0.3s;
+            width: 100%; padding: 20px 30px; font-size: 1.2rem;
+            border: none; border-radius: 50px; outline: none;
+            background: rgba(255, 255, 255, 0.95); color: #333;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
         }
-        .search-box:focus {
-            border-color: #00ccff;
-            box-shadow: 0 0 0 5px rgba(0, 204, 255, 0.25);
-            background: rgba(255, 255, 255, 0.12);
+        .search-box:focus { transform: scale(1.02); box-shadow: 0 0 20px rgba(0, 204, 255, 0.4); }
+
+        .currency-container {
+            margin-top: 50px; display: flex; gap: 20px;
+            justify-content: center; background: rgba(255, 255, 255, 0.05);
+            padding: 15px 30px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .search-icon {
-            position: absolute;
-            right: 25px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.6rem;
-            opacity: 0.6;
-        }
-        .buttons {
-            margin-top: 40px;
-        }
-        .btn {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 12px 32px;
-            margin: 0 10px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 1.05rem;
-            transition: all 0.3s;
-        }
-        .btn:hover {
-            background: rgba(0, 204, 255, 0.25);
-            border-color: #00ccff;
-        }
+        .currency-item { text-align: center; }
+        .currency-label { font-size: 0.8rem; opacity: 0.6; display: block; margin-bottom: 5px; }
+        .currency-value { font-size: 1.1rem; font-weight: bold; color: #00ccff; }
     </style>
 </head>
 <body>
-    <div class="main">
+
+    <div class="container">
         <div class="logo">Orbicxs</div>
-        <p class="tagline">Istalgan narsangizni tez va oson toping</p>
+        <p class="tagline">TEZ • XAVFSIZ • SODDA</p>
         
         <div class="search-container">
             <input type="text" id="searchInput" class="search-box" 
-                   placeholder="Qidiruvni boshlang..." autofocus>
-            <span class="search-icon">🔍</span>
+                   placeholder="Nima qidiramiz?" autofocus>
         </div>
 
-        <div class="buttons">
-            <button class="btn" onclick="searchGoogle()">Google'da qidirish</button>
-            <button class="btn" onclick="goToSite()">orbicxs.com</button>
+        <div class="currency-container" id="currencyBox">
+            <div class="currency-item">
+                <span class="currency-label">USD</span>
+                <span class="currency-value" id="usd">...</span>
+            </div>
+            <div class="currency-item">
+                <span class="currency-label">EUR</span>
+                <span class="currency-value" id="eur">...</span>
+            </div>
+            <div class="currency-item">
+                <span class="currency-label">RUB</span>
+                <span class="currency-value" id="rub">...</span>
+            </div>
         </div>
     </div>
 
     <script>
+        // Qidiruv funksiyasi
         const input = document.getElementById('searchInput');
-        
-        input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && input.value.trim() !== '') {
-                searchGoogle();
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && input.value.trim()) {
+                window.location.href = "https://orbicxs.com/search?q=" + encodeURIComponent(input.value.trim());
             }
         });
 
-        function searchGoogle() {
-            const query = input.value.trim();
-            if (query) {
-                window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}&hl=uz`;
+        // Valyuta kurslarini olish (Jonli)
+        async function fetchCurrency() {
+            try {
+                const response = await fetch('https://cbu.uz/uz/arkhiv-kursov-valyut/json/');
+                const data = await response.json();
+                const rates = {
+                    'USD': data.find(i => i.Ccy === 'USD').Rate,
+                    'EUR': data.find(i => i.Ccy === 'EUR').Rate,
+                    'RUB': data.find(i => i.Ccy === 'RUB').Rate
+                };
+                document.getElementById('usd').innerText = rates.USD + ' so\'m';
+                document.getElementById('eur').innerText = rates.EUR + ' so\'m';
+                document.getElementById('rub').innerText = rates.RUB + ' so\'m';
+            } catch (err) {
+                console.log("Valyuta yuklanmadi");
             }
         }
-
-        function goToSite() {
-            window.location.href = "https://orbicxs.com";
-        }
+        fetchCurrency();
     </script>
 </body>
 </html>
