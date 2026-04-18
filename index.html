@@ -5,75 +5,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orbicxs Browser</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+        
         body {
             margin: 0;
             padding: 0;
             height: 100vh;
-            background: linear-gradient(135deg, #0a0a0a, #1a0033);
-            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0f23, #1a0b3d);
+            font-family: 'Inter', Arial, sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            text-align: center;
+            color: #ffffff;
+            overflow: hidden;
         }
-        .container {
-            max-width: 700px;
+        .main {
+            text-align: center;
+            max-width: 720px;
+            width: 90%;
         }
         .logo {
-            font-size: 4.5rem;
-            font-weight: bold;
-            color: #00ccff;
-            margin-bottom: 10px;
-            text-shadow: 0 0 20px #00ccff;
+            font-size: 5.2rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #00ccff, #aa00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+            text-shadow: 0 0 40px rgba(0, 204, 255, 0.5);
         }
         .tagline {
-            font-size: 1.4rem;
-            margin-bottom: 50px;
-            opacity: 0.9;
+            font-size: 1.35rem;
+            opacity: 0.85;
+            margin-bottom: 60px;
+        }
+        .search-container {
+            position: relative;
+            max-width: 620px;
+            margin: 0 auto;
         }
         .search-box {
             width: 100%;
-            max-width: 600px;
-            padding: 18px 25px;
-            font-size: 1.3rem;
-            border: none;
+            padding: 20px 28px;
+            font-size: 1.35rem;
+            border: 2px solid rgba(0, 204, 255, 0.3);
             border-radius: 50px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
             outline: none;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s;
         }
         .search-box:focus {
-            box-shadow: 0 0 0 4px rgba(0, 204, 255, 0.3);
+            border-color: #00ccff;
+            box-shadow: 0 0 0 5px rgba(0, 204, 255, 0.25);
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .search-icon {
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.6rem;
+            opacity: 0.6;
         }
         .buttons {
-            margin-top: 30px;
+            margin-top: 40px;
         }
         .btn {
             background: rgba(255,255,255,0.1);
             color: white;
-            border: none;
-            padding: 12px 25px;
-            margin: 0 8px;
-            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 12px 32px;
+            margin: 0 10px;
+            border-radius: 30px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 1.05rem;
+            transition: all 0.3s;
         }
         .btn:hover {
-            background: rgba(0, 204, 255, 0.2);
+            background: rgba(0, 204, 255, 0.25);
+            border-color: #00ccff;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="main">
         <div class="logo">Orbicxs</div>
-        <p class="tagline">Tez va sodda qidiruv</p>
+        <p class="tagline">Istalgan narsangizni tez va oson toping</p>
         
-        <input type="text" id="searchInput" class="search-box" 
-               placeholder="Nima qidirmoqchisiz?" autofocus>
-        
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-box" 
+                   placeholder="Qidiruvni boshlang..." autofocus>
+            <span class="search-icon">🔍</span>
+        </div>
+
         <div class="buttons">
             <button class="btn" onclick="searchGoogle()">Google'da qidirish</button>
-            <button class="btn" onclick="goToOrbicxs()">Orbicxs.com ga o'tish</button>
+            <button class="btn" onclick="goToSite()">orbicxs.com</button>
         </div>
     </div>
 
@@ -81,7 +109,7 @@
         const input = document.getElementById('searchInput');
         
         input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && input.value.trim() !== '') {
                 searchGoogle();
             }
         });
@@ -93,7 +121,7 @@
             }
         }
 
-        function goToOrbicxs() {
+        function goToSite() {
             window.location.href = "https://orbicxs.com";
         }
     </script>
