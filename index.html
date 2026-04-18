@@ -1,125 +1,113 @@
-import sys
-from PyQt5.QtCore import QUrl
-from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QLineEdit, QToolBar,
-    QStatusBar, QTabWidget, QAction
-)
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-
-
-class Browser(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Orbicxs Browser")
-        self.setGeometry(100, 100, 1280, 850)
-
-        # Tablar
-        self.tabs = QTabWidget()
-        self.tabs.setDocumentMode(True)
-        self.tabs.setTabsClosable(True)
-        self.tabs.tabCloseRequested.connect(self.close_tab)
-        self.setCentralWidget(self.tabs)
-
-        # Brauzer ochilganda orbicxs.com ochiladi
-        self.add_new_tab(QUrl("https://orbicxs.com"), "Orbicxs")
-
-        self.create_toolbar()
-        self.statusBar = QStatusBar()
-        self.setStatusBar(self.statusBar)
-
-    def create_toolbar(self):
-        toolbar = QToolBar()
-        self.addToolBar(toolbar)
-
-        # Back
-        back_btn = QAction("← Back", self)
-        back_btn.setShortcut(QKeySequence("Back"))
-        back_btn.triggered.connect(lambda: self.current_browser().back())
-        toolbar.addAction(back_btn)
-
-        # Forward
-        forward_btn = QAction("→ Forward", self)
-        forward_btn.setShortcut(QKeySequence("Forward"))
-        forward_btn.triggered.connect(lambda: self.current_browser().forward())
-        toolbar.addAction(forward_btn)
-
-        # Reload
-        reload_btn = QAction("↻ Reload", self)
-        reload_btn.setShortcut(QKeySequence("Refresh"))
-        reload_btn.triggered.connect(lambda: self.current_browser().reload())
-        toolbar.addAction(reload_btn)
-
-        # Home (orbicxs.com)
-        home_btn = QAction("🏠 Home", self)
-        home_btn.triggered.connect(self.navigate_home)
-        toolbar.addAction(home_btn)
-
-        # URL bar
-        self.url_bar = QLineEdit()
-        self.url_bar.setMinimumWidth(550)
-        self.url_bar.returnPressed.connect(self.navigate_to_url)
-        toolbar.addWidget(self.url_bar)
-
-        # New Tab
-        new_tab_btn = QAction("+ New Tab", self)
-        new_tab_btn.triggered.connect(lambda: self.add_new_tab(QUrl("https://orbicxs.com"), "New Tab"))
-        toolbar.addAction(new_tab_btn)
-
-    def add_new_tab(self, qurl=QUrl("https://orbicxs.com"), label="New Tab"):
-        browser = QWebEngineView()
-        browser.setUrl(qurl)
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Orbicxs Browser - Toshkentda yaratilgan sodda, tez va qulay veb-brauzer. Bepul yuklab oling!">
+    <title>Orbicxs Browser - Bepul yuklab oling</title>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a, #1a0033);
+            color: #ffffff;
+            text-align: center;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+        h1 {
+            font-size: 3.8rem;
+            margin-bottom: 10px;
+            color: #00ccff;
+        }
+        .subtitle {
+            font-size: 1.5rem;
+            opacity: 0.9;
+            margin-bottom: 40px;
+        }
+        .download-btn {
+            background: #0066ff;
+            color: white;
+            padding: 18px 55px;
+            font-size: 26px;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            margin: 25px 10px;
+            transition: all 0.3s;
+        }
+        .download-btn:hover {
+            background: #3388ff;
+            transform: translateY(-5px);
+        }
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin: 80px 0;
+        }
+        .feature-card {
+            background: rgba(255,255,255,0.08);
+            padding: 25px;
+            border-radius: 15px;
+            width: 280px;
+        }
+        footer {
+            margin-top: 100px;
+            padding: 30px;
+            opacity: 0.75;
+            font-size: 0.95rem;
+        }
+        .github {
+            color: #00ccff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Orbicxs Browser</h1>
+        <p class="subtitle">O‘zbekistonda yaratilgan • Tez • Sodda • Siz uchun</p>
         
-        browser.urlChanged.connect(lambda qurl, b=browser: self.update_url_bar(qurl, b))
-        
-        browser.loadFinished.connect(lambda: self.tabs.setTabText(
-            self.tabs.currentIndex(), 
-            browser.page().title()[:35] or label
-        ))
+        <a href="https://github.com/SizningUsername/orbicxs-browser/releases/download/v1.0/OrbicxsBrowser.exe" download>
+            <button class="download-btn">⬇️ Windows uchun yuklab olish (.exe)</button>
+        </a>
 
-        index = self.tabs.addTab(browser, label)
-        self.tabs.setCurrentIndex(index)
+        <p style="margin-top: 20px; opacity: 0.85;">
+            Hajmi: taxminan 180–220 MB | Versiya: 1.0
+        </p>
 
-    def current_browser(self):
-        return self.tabs.currentWidget()
+        <div class="features">
+            <div class="feature-card">
+                <h3>🔍 Avtomatik Google qidiruvi</h3>
+                <p>URL maydoniga istalgan narsani yozing — darhol Google natijalari chiqadi</p>
+            </div>
+            <div class="feature-card">
+                <h3>📑 Ko‘p tablar</h3>
+                <p>Bir vaqtda bir nechta sahifada ishlang</p>
+            </div>
+            <div class="feature-card">
+                <h3>🏠 Orbicxs.com bilan bog‘langan</h3>
+                <p>Brauzer ochilganda avtomatik orbicxs.com sahifasi ochiladi</p>
+            </div>
+        </div>
 
-    def navigate_to_url(self):
-        text = self.url_bar.text().strip()
-        if not text:
-            return
+        <a href="https://github.com/SizningUsername/orbicxs-browser" class="github" target="_blank">
+            Kodni GitHub’da ko‘rish →
+        </a>
+    </div>
 
-        # 1. To'liq URL bo'lsa (http/https bilan)
-        if text.startswith(("http://", "https://")):
-            self.current_browser().setUrl(QUrl(text))
-            return
-
-        # 2. Domen ko'rinishidagi link (google.com, youtube.com)
-        if "." in text and " " not in text:
-            if not text.startswith("www."):
-                text = "www." + text
-            self.current_browser().setUrl(QUrl("https://" + text))
-            return
-
-        # 3. Oddiy matn bo'lsa → Google'da qidiruv
-        # Bu yerda Google'da qidirilganda istalgan narsani topa olasiz
-        search_url = f"https://www.google.com/search?q={text.replace(' ', '+')}&hl=uz"
-        self.current_browser().setUrl(QUrl(search_url))
-
-    def navigate_home(self):
-        self.current_browser().setUrl(QUrl("https://orbicxs.com"))
-
-    def update_url_bar(self, qurl, browser=None):
-        if browser == self.current_browser():
-            self.url_bar.setText(qurl.toString())
-
-    def close_tab(self, index):
-        if self.tabs.count() > 1:
-            self.tabs.removeTab(index)
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    app.setAttribute(0xAA, True)  # High DPI
-    window = Browser()
-    window.show()
-    sys.exit(app.exec_())
+    <footer>
+        <p>© 2026 Orbicxs • Toshkent, O‘zbekiston</p>
+        <p>Yaratuvchi: Salom</p>
+    </footer>
+</body>
+</html>
