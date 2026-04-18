@@ -3,37 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orbicxs Browser - Bepul yuklab oling</title>
+    <title>OrbicXs - Tez va xavfsiz brauzer</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #0f0f0f; color: #fff; padding: 50px; }
-        h1 { color: #00ccff; }
-        .download-btn {
-            background: #0066ff; color: white; padding: 18px 40px; font-size: 22px;
-            border: none; border-radius: 10px; cursor: pointer; margin: 20px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .download-btn:hover { background: #3388ff; }
-        .features { max-width: 800px; margin: 40px auto; text-align: left; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #1e1e1e;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .browser-window {
+            width: 100%;
+            height: 100vh;
+            background: #2d2d2d;
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .title-bar {
+            background: linear-gradient(to right, #0a84ff, #0066cc);
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .controls {
+            display: flex;
+            gap: 8px;
+        }
+        .control-btn {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ff5f57;
+        }
+        .control-btn:nth-child(2) { background: #ffbd2e; }
+        .control-btn:nth-child(3) { background: #28c940; }
+
+        .toolbar {
+            background: #3c3c3c;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .nav-btn {
+            background: #555;
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .url-bar {
+            flex: 1;
+            background: #1e1e1e;
+            border: 1px solid #555;
+            border-radius: 20px;
+            padding: 8px 16px;
+            color: #fff;
+            font-size: 15px;
+        }
+        .iframe-container {
+            flex: 1;
+            background: #fff;
+            position: relative;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            color: #0a84ff;
+        }
     </style>
 </head>
 <body>
-    <h1>🚀 Orbicxs Browser</h1>
-    <p><strong>Sodda, tez va sizga moslashtirilgan veb-brauzer</strong></p>
-    
-    <a href="download/OrbicxsBrowser.exe" download>
-        <button class="download-btn">⬇️ Windows uchun yuklab olish (.exe)</button>
-    </a>
-    
-    <div class="features">
-        <h2>Xususiyatlari:</h2>
-        <ul>
-            <li>Multiple tablar</li>
-            <li>URL bar da avtomatik Google qidiruvi</li>
-            <li>Orbicxs.com bilan integratsiya</li>
-            <li>Python + PyQt5 bilan yaratilgan</li>
-        </ul>
+
+<div class="browser-window">
+    <!-- Title bar -->
+    <div class="title-bar">
+        <div class="logo">OrbicXs</div>
+        <div class="title">OrbicXs Browser</div>
+        <div class="controls">
+            <div class="control-btn"></div>
+            <div class="control-btn"></div>
+            <div class="control-btn"></div>
+        </div>
     </div>
 
-    <p><strong>Versiya:</strong> 1.0 • Hajmi: ~180 MB</p>
-    <p>Kodni ko‘rish: <a href="https://github.com/SizningUsername/orbicxs-browser" style="color:#00ccff;">GitHub</a></p>
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <button class="nav-btn" onclick="goBack()">←</button>
+        <button class="nav-btn" onclick="goForward()">→</button>
+        <button class="nav-btn" onclick="reloadPage()">↻</button>
+        
+        <input type="text" id="urlInput" class="url-bar" 
+               value="https://www.google.com" 
+               onkeypress="if(event.key === 'Enter') loadUrl()">
+        
+        <button onclick="loadUrl()" style="background:#0a84ff; color:white; border:none; padding:8px 20px; border-radius:20px; cursor:pointer;">
+            Go
+        </button>
+    </div>
+
+    <!-- Brauzer maydoni (iframe) -->
+    <div class="iframe-container">
+        <iframe id="webview" src="https://www.google.com" allowfullscreen></iframe>
+    </div>
+</div>
+
+<script>
+    const iframe = document.getElementById('webview');
+    const urlInput = document.getElementById('urlInput');
+
+    function loadUrl() {
+        let url = urlInput.value.trim();
+        if (!url) return;
+        
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'https://' + url;
+        }
+        iframe.src = url;
+    }
+
+    function reloadPage() {
+        iframe.contentWindow.location.reload();
+    }
+
+    function goBack() {
+        if (iframe.contentWindow.history) iframe.contentWindow.history.back();
+    }
+
+    function goForward() {
+        if (iframe.contentWindow.history) iframe.contentWindow.history.forward();
+    }
+
+    // Sahifa yuklanganda urlni yangilab turish
+    iframe.onload = function() {
+        try {
+            urlInput.value = iframe.contentWindow.location.href;
+        } catch(e) {}
+    };
+</script>
+
 </body>
 </html>
