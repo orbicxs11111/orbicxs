@@ -3,71 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orbicxs Search</title>
+    <title>Orbicxs Terminal | Crypto & Fiat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            margin: 0; padding: 0;
-            background-color: #202124;
-            color: #e8eaed;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            display: flex; flex-direction: column; height: 100vh;
+        :root {
+            --bg: #0d1117;
+            --side: #161b22;
+            --accent: #58a6ff;
+            --up: #39d353;
+            --down: #f85149;
+            --text: #c9d1d9;
         }
-        .header { display: flex; justify-content: flex-end; padding: 15px; font-size: 13px; }
-        .header a { color: white; text-decoration: none; margin-left: 15px; opacity: 0.8; }
-        .header a:hover { text-decoration: underline; }
-        
-        .main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        
-        /* Orbicxs Logo Style */
-        .logo { font-size: 85px; font-weight: bold; margin-bottom: 30px; cursor: default; user-select: none; }
-        .o1 { color: #4285F4; } .r { color: #EA4335; } .b { color: #FBBC05; }
-        .i { color: #4285F4; } .c { color: #34A853; } .x { color: #EA4335; } .s { color: #FBBC05; }
 
-        .search-container { width: 100%; max-width: 584px; position: relative; }
-        .search-bar {
-            width: 100%; background: #303134; border: 1px solid #5f6368;
-            border-radius: 24px; padding: 12px 20px; box-sizing: border-box;
-            color: white; font-size: 16px; outline: none; transition: box-shadow 0.2s;
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
-        .search-bar:hover, .search-bar:focus {
-            background-color: #3c4043; box-shadow: 0 1px 6px rgba(32,33,36,0.28); border-color: rgba(223,225,229,0);
+
+        /* Sidebar - Narxlar ro'yxati */
+        .sidebar {
+            width: 350px;
+            background: var(--side);
+            border-right: 1px solid #30363d;
+            display: flex;
+            flex-direction: column;
         }
-        
-        .buttons { margin-top: 25px; }
-        .btn {
-            background-color: #303134; border: 1px solid #303134; border-radius: 4px;
-            color: #e8eaed; font-size: 14px; margin: 5px; padding: 10px 20px;
-            cursor: pointer; transition: border 0.2s;
+
+        .brand {
+            padding: 20px;
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--accent);
+            text-align: center;
+            border-bottom: 1px solid #30363d;
+            letter-spacing: 2px;
         }
-        .btn:hover { border: 1px solid #9aa0a6; color: #fff; }
-        
-        .footer { background: #171717; padding: 15px; font-size: 14px; color: #9aa0a6; border-top: 1px solid #3c4043; }
+
+        /* Tab menyusi */
+        .tabs {
+            display: flex;
+            background: #0d1117;
+            padding: 5px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: none;
+            color: #8b949e;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .asset-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .asset-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 10px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .asset-item:hover { background: #21262d; }
+
+        .asset-info .name { font-weight: bold; font-size: 14px; display: block; }
+        .asset-info .sub { font-size: 11px; color: #8b949e; }
+
+        .asset-price { text-align: right; }
+        .val { font-family: 'monospace'; font-size: 15px; font-weight: bold; }
+        .chg { font-size: 11px; font-weight: bold; }
+
+        /* Main Content - Grafik */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #tv-chart { flex: 1; }
+
+        /* Miltillash effekti */
+        .flash-up { color: var(--up) !important; transition: 0.2s; }
+        .flash-down { color: var(--down) !important; transition: 0.2s; }
+
     </style>
 </head>
 <body>
-    <div class="header">
-        <a href="#">Gmail</a>
-        <a href="#">Rasmlar</a>
-        <a href="#" style="background: #8ab4f8; color: #202124; padding: 7px 15px; border-radius: 4px; font-weight: bold;">Kirish</a>
-    </div>
 
-    <div class="main">
-        <div class="logo">
-            <span class="o1">O</span><span class="r">r</span><span class="b">b</span><span class="i">i</span><span class="c">c</span><span class="x">x</span><span class="s">s</span>
+    <div class="sidebar">
+        <div class="brand">ORBICXS <span style="color:white">X</span></div>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('crypto')">KRIPTO</button>
+            <button class="tab-btn" onclick="showTab('fiat')">VALYUTA</button>
         </div>
-        <div class="search-container">
-            <form action="https://www.google.com/search" method="GET">
-                <input type="text" name="q" class="search-bar" placeholder="Orbicxs orqali qidiring..." autofocus>
-                <div class="buttons">
-                    <button type="submit" class="btn">Orbicxs Qidiruvi</button>
-                    <button type="button" class="btn" onclick="location.href='https://orbicxs.com'">Omadingizni sinang</button>
+
+        <div id="crypto-list" class="asset-list">
+            <div class="asset-item" onclick="changeChart('BINANCE:BTCUSDT')">
+                <div class="asset-info">
+                    <span class="name">BTC / USDT</span>
+                    <span class="sub">Bitcoin</span>
                 </div>
-            </form>
+                <div class="asset-price">
+                    <div class="val" id="btc-val">Loading...</div>
+                    <div class="chg" id="btc-chg">0.00%</div>
+                </div>
+            </div>
+            <div class="asset-item" onclick="changeChart('BINANCE:ETHUSDT')">
+                <div class="asset-info">
+                    <span class="name">ETH / USDT</span>
+                    <span class="sub">Ethereum</span>
+                </div>
+                <div class="asset-price">
+                    <div class="val" id="eth-val">Loading...</div>
+                    <div class="chg" id="eth-chg">0.00%</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="fiat-list" class="asset-list" style="display:none;">
+            <div class="asset-item" onclick="changeChart('FX_IDC:USDUZS')">
+                <div class="asset-info">
+                    <span class="name">USD / UZS</span>
+                    <span class="sub">Dollar / So'm</span>
+                </div>
+                <div class="asset-price">
+                    <div class="val" id="uzs-val">12,650</div>
+                    <div class="chg" style="color:var(--up)">Live</div>
+                </div>
+            </div>
+            <div class="asset-item" onclick="changeChart('FX:EURUSD')">
+                <div class="asset-info">
+                    <span class="name">EUR / USD</span>
+                    <span class="sub">Yevro / Dollar</span>
+                </div>
+                <div class="asset-price">
+                    <div class="val" id="eur-val">1.0820</div>
+                    <div class="chg" id="eur-chg">Global</div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="footer">
-        O'zbekiston | Orbicxs © 2026
+    <div class="main-content">
+        <div id="tv-chart"></div>
     </div>
+
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script>
+        // 1. Varaqalarni almashtirish (Crypto/Fiat)
+        function showTab(type) {
+            document.querySelectorAll('.asset-list').forEach(l => l.style.display = 'none');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(type + '-list').style.display = 'block';
+            event.target.classList.add('active');
+        }
+
+        // 2. Grafikni yangilash
+        let currentSymbol = "BINANCE:BTCUSDT";
+        let widget = null;
+
+        function loadChart(symbol) {
+            widget = new TradingView.widget({
+                "autosize": true,
+                "symbol": symbol,
+                "interval": "H",
+                "timezone": "Etc/UTC",
+                "theme": "dark",
+                "style": "1",
+                "locale": "uz",
+                "container_id": "tv-chart",
+                "hide_side_toolbar": false,
+                "allow_symbol_change": true,
+                "details": true,
+                "hotlist": true,
+                "calendar": true,
+            });
+        }
+
+        function changeChart(symbol) {
+            loadChart(symbol);
+        }
+
+        loadChart(currentSymbol);
+
+        // 3. Haqiqiy vaqtda Kriptovalyuta (Binance WebSocket)
+        const btcWs = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
+        const ethWs = new WebSocket('wss://stream.binance.com:9443/ws/ethusdt@ticker');
+
+        function updateUI(id, data) {
+            const valEl = document.getElementById(id + '-val');
+            const chgEl = document.getElementById(id + '-chg');
+            const price = parseFloat(data.c).toLocaleString(undefined, {minimumFractionDigits: 2});
+            
+            // Miltillash
+            const oldPrice = parseFloat(valEl.innerText.replace(/,/g, ''));
+            if (parseFloat(data.c) > oldPrice) valEl.className = 'val flash-up';
+            else if (parseFloat(data.c) < oldPrice) valEl.className = 'val flash-down';
+            setTimeout(() => valEl.className = 'val', 300);
+
+            valEl.innerText = price;
+            chgEl.innerText = (data.P > 0 ? '+' : '') + data.P + '%';
+            chgEl.style.color = data.P >= 0 ? 'var(--up)' : 'var(--down)';
+        }
+
+        btcWs.onmessage = (e) => updateUI('btc', JSON.parse(e.data));
+        ethWs.onmessage = (e) => updateUI('eth', JSON.parse(e.data));
+
+        // 4. Fiat API (USD/UZS)
+        async function fetchFiat() {
+            try {
+                const res = await fetch('https://open.er-api.com/v6/latest/USD');
+                const data = await res.json();
+                document.getElementById('uzs-val').innerText = data.rates.UZS.toLocaleString();
+                document.getElementById('eur-val').innerText = data.rates.EUR.toFixed(4);
+            } catch(e) {}
+        }
+        setInterval(fetchFiat, 60000);
+        fetchFiat();
+
+    </script>
 </body>
 </html>
